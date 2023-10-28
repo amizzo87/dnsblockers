@@ -30,8 +30,16 @@ async function processFile(filePath) {
     return data;
 }
 
-async function start(files) {
+async function start(inputDir, outputFile) {
     let uniqueAddresses = new Set();
+    let files = [];
+
+    try {
+        files = fs.readdirSync(inputDir).map(file => path.join(inputDir, file)); 
+    } catch (error) {
+        console.error(`Error reading files from input directory: ${error.message}`);
+        process.exit(1);
+    }
 
     for (let file of files) {
         let addresses = await processFile(file);
@@ -40,19 +48,11 @@ async function start(files) {
         }
     }
 
-    fs.writeFileSync('output.txt', Array.from(uniqueAddresses).join('\n'), 'utf-8');
-    console.log("Output written to output.txt");
+    fs.writeFileSync(outputFile, Array.from(uniqueAddresses).join('\n'), 'utf-8');
+    console.log(`Output written to ${outputFile}`);
 }
 
-let files = process.argv.slice(2);
-if (files.length === 0) {
-    try {
-        files = fs.readdirSync('./lists/').map(file => path.join('./lists/', file)); 
-    } catch (error) {
-        console.error(`Error reading files from ./lists/ directory: ${error.message}`);
-        process.exit(1);
-    }
-}
-
-start(files)
+let inputDir = process.argv[2] || './lists/';
+let outputFile = process.argv[3] || 'output.txt';
+start(inputDir, outputFile)
     .catch(console.error);
