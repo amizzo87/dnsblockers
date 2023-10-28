@@ -1,6 +1,6 @@
 const fs = require('fs');
-const readline = require('readline');
 const path = require('path');
+const readline = require('readline');
 
 function isDomain(domain) {
     const pattern = /^([a-z0-9]+(-[a-z0-9]+)*)*[a-z0-9]+\.[a-z]{2,}$/;
@@ -45,5 +45,14 @@ async function start(files) {
 }
 
 let files = process.argv.slice(2);
+if (files.length === 0) {
+    try {
+        files = fs.readdirSync('./lists/').map(file => path.join('./lists/', file)); 
+    } catch (error) {
+        console.error(`Error reading files from ./lists/ directory: ${error.message}`);
+        process.exit(1);
+    }
+}
+
 start(files)
     .catch(console.error);
