@@ -22,7 +22,7 @@ async function processFile(filePath) {
     let data = [];
     for await (const line of rl) {
         const trimmedLine = line.trim();
-        if ((trimmedLine.length > 0 && !trimmedLine.startsWith('#')) 
+        if ((trimmedLine.length > 0 && !trimmedLine.startsWith('#') && !trimmedLine.startsWith('*')) 
             && (isDomain(trimmedLine) || isIp(trimmedLine))) {
             data.push(trimmedLine);
         }
@@ -40,8 +40,8 @@ async function start(files) {
         }
     }
 
-    fs.writeFileSync('processed.txt', Array.from(uniqueAddresses).join('\n'), 'utf-8');
-    console.log("Output written to processed.txt");
+    fs.writeFileSync('output.txt', Array.from(uniqueAddresses).join('\n'), 'utf-8');
+    console.log("Output written to output.txt");
 }
 
 let files = process.argv.slice(2);
