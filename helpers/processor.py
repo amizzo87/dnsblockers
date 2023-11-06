@@ -1,5 +1,6 @@
 import re
 import os
+import glob
 import argparse
 from typing import List
 
@@ -37,8 +38,12 @@ def start(files: List[str], output_file: str):
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser(description='Read files and apply filtering')
-    parser.add_argument('files', metavar='F', type=str, nargs='+', help='an input file for processing')
-    parser.add_argument('--out', dest='output_file', default='output.txt', help='the output file (default: output.txt)')
+    parser.add_argument('files', metavar='F', type=str, nargs='*', help='an input file for processing')
+    parser.add_argument('--out', dest='output_file', default='../output.txt', help='the output file (default: output.txt)')
     args = parser.parse_args()
+
+    # If no files are provided as command line arguments, use all .txt files in ../lists
+    if not args.files:
+        args.files = glob.glob('../lists/*.txt')
 
     start(args.files, args.output_file)
