@@ -1,0 +1,77 @@
+image: python:latest
+
+stages:
+  - download
+  - process
+  - recommit
+#   - deploy
+
+download:
+  stage: download  
+  script:
+    - python "$CI_PROJECT_DIR/helpers/download.py" --out $CI_PROJECT_DIR
+  artifacts:
+    paths:
+      - $CI_PROJECT_DIR/lists/*.txt
+#      - "$CI_PROJECT_DIR/lists/1hosts_lite.txt"
+#      - "$CI_PROJECT_DIR/lists/mullvad_adblock.txt"
+#      - "$CI_PROJECT_DIR/lists/mullvad_privacy.txt"
+
+# download_process_recommit:
+#   stage: download_process_recommit  
+#   script:
+#     - python "$CI_PROJECT_DIR/helpers/download.py"
+#     - python "$CI_PROJECT_DIR/helpers/processor.py" --out $CI_PROJECT_DIR/output.txt
+#     - git config --global user.email "anthony@izzo.one"
+#     - git config --global user.name "Anthony Izzo"
+#     - git config --global "http.${CI_SERVER_URL}.sslCAInfo" "$CI_SERVER_TLS_CA_FILE"
+#     - git checkout main
+#     - git add "$CI_PROJECT_DIR/output.txt"
+#     - git commit -m "Update made by GitLab CI/CD [skip ci]"
+#     - git push -o ci.skip "https://oauth2:${ACCESS_TOKEN}@gitlab.com/${CI_PROJECT_PATH}.git" HEAD:main
+#   only:
+#     - main  
+process:
+  stage: process 
+  dependencies:
+    - download
+  script:
+    - python "$CI_PROJECT_DIR/helpers/processor.py" $CI_PROJECT_DIR/lists/ --out $CI_PROJECT_DIR/output.txt
+  artifacts:
+    paths:
+     - $CI_PROJECT_DIR/lists/*.txt
+     # - "$CI_PROJECT_DIR/lists/1hosts_lite.txt"
+     # - "$CI_PROJECT_DIR/lists/mullvad_adblock.txt"
+     # - "$CI_PROJECT_DIR/lists/mullvad_privacy.txt"
+      - "$CI_PROJECT_DIR/output.txt"
+
+recommit:
+  stage: recommit
+  dependencies:
+    - process
+  when: on_success
+  script:
+    - git config --global user.email "anthony@izzo.one"
+    - git config --global user.name "Anthony Izzo"
+    - git config --global "http.${CI_SERVER_URL}.sslCAInfo" "$CI_SERVER_TLS_CA_FILE"
+    - git checkout main
+    - git add --all
+#    - git add "$CI_PROJECT_DIR/output.txt"
+#    - git add "$CI_PROJECT_DIR/lists/1hosts_lite.txt"
+#    - git add "$CI_PROJECT_DIR/lists/mullvad_adblock.txt"
+#    - git add "$CI_PROJECT_DIR/lists/mullvad_privacy.txt"
+    - git commit -a -m "List updates made by GitLab CI/CD [skip ci]"
+    - git push -o ci.skip "https://oauth2:${ACCESS_TOKEN}@gitlab.com/${CI_PROJECT_PATH}.git" HEAD:main
+  only:
+    - main
+
+
+# deploy:
+#   stage: deploy
+#   dependencies:
+#     - download
+#     - process
+#   when: on_success
+#   trigger:
+#     project: izzoa/cloudflare-block
+#     branch: main       
